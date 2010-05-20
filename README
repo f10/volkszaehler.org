@@ -1,0 +1,99 @@
+/*
+* Copyright (c) 2010 by Florian Ziegler <fz@f10-home.de>
+* 
+* This program is free software; you can redistribute it and/or modify it
+* under the terms of the GNU General Public License (either version 2 or
+* version 3) as published by the Free Software Foundation.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program; if not, write to the Free Software
+* Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+*
+* For more information on the GPL, please go to:
+* http://www.gnu.org/copyleft/gpl.html
+*/
+
+Installationsanleitung für mein.volkszaehler.org
+
+
+Diese Anleitung beschränkt sich zunächst auf die Verwendung einer MySQL Datenbank.
+Bitte lese die Anleitung komplett durch, bevor du loslegst.
+
+========================================================================
+Konfiguration un Upload
+========================================================================
+
+Zur Installation musst du zunächst diese Software downloaden und entpacken:
+http://github.com/f10/volkszaehler.org
+
+Die Konfiguration findet in der Datei config.php statt. Diese kann erstellt werden,
+indem du eine Kopie von config.default.php mit diesem Namen anlegst.
+
+In der config.php sind ein paar Änderungen nötig:
+	$CONFIG['data_storage'] = 'mysql';
+	
+	Zugangsdaten des MySQL Servers:
+	$CONFIG['mysql']['db_server'] = 'localhost';
+	$CONFIG['mysql']['db_name'] = 'smartmeter';
+	$CONFIG['mysql']['db_user'] = 'smartmeter';
+	$CONFIG['mysql']['db_password'] = 'smartmeter';
+
+Abschließend müssen die Dateien per FTP/SSH auf den Server kopiert werden.
+
+
+========================================================================
+Anlegen der Datenbank
+========================================================================
+
+Zum Anlegen der Datenbankstruktur muss lediglich die Datei install.php
+im Browser aufgerufen werden.
+Beispiel: http://mein.volkszaehler.org/install.php
+
+
+========================================================================
+Kanäle hinzufügen
+========================================================================
+
+Hinweis: um das Editieren der Kanäle zu erlauben muss in der config.php der
+Parameter $CONFIG['allow_channel_edit'] = true tesetzt sein. Soll das editieren
+anschließend wieder deaktiviert werden, so muss der Parameter wieder auf false
+stehen.
+
+Um httplog verwenden zu können, müssen zunächst die verwendeten Kanäle definiert
+werden. Dies geschiet mit den Script channel_admin.php unter Angabe der uuid.
+Als uuid wird hier der im Controller eingestelle Wert angegeben.
+Beispiel: http://mein.volkszaehler.org/channel_admin.php?uuid=12345678-1234-1234-1234-123456789012
+
+Auf dieser Seite können die verwendeten Kanäle per Formular angelegt werden.
+Beispiel:	Port 'PC0' (Port und Pin am Controller)
+		Port 'PC0' (Port und Pin am Controller)
+		Auflösung '2000' (Impulse/kWh)
+		Funktion 'Dachgeschoss' (Beschreibung des Kanals)
+
+
+========================================================================
+Messwerte anzeigen
+========================================================================
+
+Dazu wird smartmeter.html mit der verwendeten uuid aufgerufen.
+Beispiel: http://mein.volkszaehler.org/smartmeter.html?uuid=12345678-1234-1234-1234-123456789012
+
+
+
+========================================================================
+weitere Infos
+========================================================================
+
+Wenn in der config.php der Parameter $CONFIG['default_uuid'] definiert ist,
+können die oben genannten Skripte auch ohne uuid geöffnet werden.
+
+Es ist möglich, die Leistungs-Plots auf kleinen Displays anzuzeigen (Smartphone).
+Die Plotgröße wird dazu angepasst. Evtl. ist es nötig nach dem Drehen des
+Displays die Seite neu zu laden.
+
+
