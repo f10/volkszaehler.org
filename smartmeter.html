@@ -239,9 +239,15 @@ function getData() {
 	
 	// list of channel ids, comma separated
 	ids_parameter = "";
-	for(i=0;i<f.ids.length;i++) {
-		if(f.ids[i].checked == 1) {
-			ids_parameter += f.ids[i].value + ",";
+	
+	if(typeof f.ids.length == 'undefined') {	// only one channel
+		ids_parameter = f.ids.value;
+	}
+	else {	// more than one channel
+		for(i=0;i<f.ids.length;i++) {
+			if(f.ids[i].checked == 1) {
+				ids_parameter += f.ids[i].value + ",";
+			}
 		}
 	}
 	
