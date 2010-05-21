@@ -27,7 +27,7 @@ if($CONFIG['data_storage'] == 'mysql') {
 	
 	$sql = '	CREATE TABLE IF NOT EXISTS `channels` (
 				`function` char(100) collate utf8_unicode_ci default NULL,
-				`resolution` int(11) default '1000',
+				`resolution` int(11) default \'1000\',
 				`id` int(11) NOT NULL auto_increment,
 				`uuid` char(36) collate utf8_unicode_ci default NULL,
 				`channel` varchar(255) collate utf8_unicode_ci NOT NULL,
