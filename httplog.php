@@ -21,7 +21,7 @@
 
 include('smartmeter.incl.php');
 
-init_db();
+init_db(true);
 
 // time=<timestamp>
 // port=P{ABCD}{0-7}

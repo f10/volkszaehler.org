@@ -25,11 +25,16 @@ $CONFIG['passthru'] = false; 			// Array('http://volkszaehler.org/httplog.php','
 $CONFIG['default_uuid'] = '';			// you can define a default uuid which is used if no uuid is tranfered - also as to be set in smartmeter.html
 $CONFIG['allow_channel_edit'] = false;	// set to true to manage channels via channel_admin.php
 
+
 // options for mysql storage
+// you can # differentiate readonly and write user or set both to the same user/password
 $CONFIG['mysql']['db_server'] = 'localhost';
 $CONFIG['mysql']['db_name'] = 'smartmeter';
-$CONFIG['mysql']['db_user'] = 'smartmeter';
-$CONFIG['mysql']['db_password'] = 'smartmeter';
+$CONFIG['mysql']['readonly']['db_user'] = 'sm_read_user';
+$CONFIG['mysql']['readonly']['db_password'] = 'secret';
+$CONFIG['mysql']['write']['db_user'] = 'sm_write_user';
+$CONFIG['mysql']['write']['db_password'] = 'secret';
+
 
 // options for csv storage
 $CONFIG['csv']['path'] = 'data';

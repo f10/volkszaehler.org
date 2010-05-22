@@ -50,9 +50,34 @@ Abschließend müssen die Dateien per FTP/SSH auf den Server kopiert werden.
 Anlegen der Datenbank
 ========================================================================
 
-Zum Anlegen der Datenbankstruktur muss lediglich die Datei install.php
-im Browser aufgerufen werden.
-Beispiel: http://mein.volkszaehler.org/install.php
+Variante 1: (Free-)Webspace
+	Der Provider stellt für Gewöhnlich im Webinterface eine Möglichkeit
+	zur Verfügung, mit der eine Datenbank angelegt werden kann. Dort
+	ist sowohl der Name der Datenbank als auch der User und das Passwort
+	zu erfahren.
+	Sobald die Datenbank angelegt wurde, genügt es, die Installationsroutine
+	(install.php) auszuführen.
+	Beispiel: http://mein.volkszaehler.org/install.php
+
+Variante 2: eigener Server mit Root-Zugriff
+	Als root (mysql root User Defaultpasswort '' ) am MySQL-Server anmelden:
+	user@server:~ # mysql -u root -p
+
+	Datenbank anlegen:
+	mysql>CREATE DATABASE `smartmeter`;
+	
+	Rechte zuweisen: (Passwort: 'secret')
+	mysql>GRANT SELECT,INSERT,UPDATE,DELETE ON `smartmeter`.* TO `sm_write_user`@`localhost` IDENTIFIED BY 'secret';
+	mysql>GRANT SELECT ON `smartmeter`.* TO `sm_read_user`@`localhost` IDENTIFIED BY 'secret';
+
+	Datenbankstruktur anlegen:
+	mysql>USE `smartmeter`;
+	anschließend die beiden SQL-Commands aus der Datei install.php ausführen.
+
+	mysql>exit
+
+	Zu empfehlen ist das Programm phpMyAdmin, falls weitere Einstellungen
+	an der Datenbank vorgenommen werden sollen.
 
 
 ========================================================================

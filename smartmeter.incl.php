@@ -22,11 +22,16 @@
 
 	include ('config.php');
 
-	function init_db(){
+	function init_db($write_support = false){
 		global $CONFIG,$db,$db_select, $db_server, $db_name, $db_user, $db_password;
 		
 		if($CONFIG['data_storage'] == 'mysql') {
-			$db = MYSQL_CONNECT($CONFIG['mysql']['db_server'], $CONFIG['mysql']['db_user'], $CONFIG['mysql']['db_password']) or die ("Konnte keine Verbindung zur Datenbank herstellen");
+			if($write_support) {
+				$db = MYSQL_CONNECT($CONFIG['mysql']['db_server'], $CONFIG['mysql']['write']['db_user'], $CONFIG['mysql']['write']['db_password']) or die ("Konnte keine Verbindung zur Datenbank herstellen");
+			}
+			else {
+				$db = MYSQL_CONNECT($CONFIG['mysql']['db_server'], $CONFIG['mysql']['readonly']['db_user'], $CONFIG['mysql']['readonly']['db_password']) or die ("Konnte keine Verbindung zur Datenbank herstellen");
+			}
 			$db_select = MYSQL_SELECT_DB($CONFIG['mysql']['db_name']);
 		}
 		elseif($CONFIG['data_storage'] == 'pgsql') {

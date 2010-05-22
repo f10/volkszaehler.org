@@ -23,25 +23,25 @@ include('smartmeter.incl.php');
 
 if($CONFIG['data_storage'] == 'mysql') {
 
-	init_db();
+	init_db(true);
 	
-	$sql = '	CREATE TABLE IF NOT EXISTS `channels` (
+	$sql = "	CREATE TABLE IF NOT EXISTS `channels` (
 				`function` char(100) collate utf8_unicode_ci default NULL,
-				`resolution` int(11) default \'1000\',
+				`resolution` int(11) default '1000',
 				`id` int(11) NOT NULL auto_increment,
 				`uuid` char(36) collate utf8_unicode_ci default NULL,
 				`channel` varchar(255) collate utf8_unicode_ci NOT NULL,
 				PRIMARY KEY  (`id`)
-			) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1';
+			) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
 	
 	mysql_query($sql);
 	
-	$sql = '	CREATE TABLE IF NOT EXISTS `pulses` (
+	$sql = "	CREATE TABLE IF NOT EXISTS `pulses` (
 				`id` int(11) NOT NULL,
 				`time` datetime NOT NULL,
 				`numb` tinyint(4) unsigned NOT NULL,
 				PRIMARY KEY  (`id`,`time`)
-			) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci';
+			) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
 	
 	mysql_query($sql);
 }

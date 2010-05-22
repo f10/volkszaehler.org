@@ -28,7 +28,7 @@ if(!$CONFIG['allow_channel_edit']) {
 }
 
 $uuid = validate_uuid($_GET['uuid']);
-init_db();
+init_db(true);
 
 if($CONFIG['data_storage'] == 'mysql') {
 	
