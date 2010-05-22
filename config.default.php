@@ -20,7 +20,7 @@
 */
 
 
-$CONFIG['data_storage'] = 'mysql';		// mysql|pgsql|csv|sqlite
+$CONFIG['data_storage'] = 'mysql';		// mysql
 $CONFIG['passthru'] = false; 			// Array('http://volkszaehler.org/httplog.php','http://volkszaehler.org/http2.php');
 $CONFIG['default_uuid'] = '';			// you can define a default uuid which is used if no uuid is tranfered - also as to be set in smartmeter.html
 $CONFIG['allow_channel_edit'] = false;	// set to true to manage channels via channel_admin.php
@@ -34,11 +34,6 @@ $CONFIG['mysql']['readonly']['db_user'] = 'sm_read_user';
 $CONFIG['mysql']['readonly']['db_password'] = 'secret';
 $CONFIG['mysql']['write']['db_user'] = 'sm_write_user';
 $CONFIG['mysql']['write']['db_password'] = 'secret';
-
-
-// options for csv storage
-$CONFIG['csv']['path'] = 'data';
-
 
 
 ?>

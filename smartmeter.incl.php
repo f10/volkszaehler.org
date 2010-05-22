@@ -37,9 +37,6 @@
 		elseif($CONFIG['data_storage'] == 'pgsql') {
 			// I don't know yet
 		}
-		elseif($CONFIG['data_storage'] == 'csv') {
-			// check if csv file is read/writable ???
-		}
 	}
 	
 	function validate_uuid($uuid) {
