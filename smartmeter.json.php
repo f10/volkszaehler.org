@@ -24,69 +24,59 @@
  * uuid
  * mode = {getPulses,getChannels}
  * ids = comma separated string of ids
- * windowSize = integer								(1)
- * windowInterval = {SECOND|MINUTE|HOUR|DAY|MONTH|YEAR}		(HOUR)
- * windowStart = {auto|'YYYY-MM-DD'} 					(auto)
- * windowEnd = {auto|LAST|timestamp}					(LAST)
+ * windowStart = {timestamp}
+ * windowEnd = {timestamp}
 */
 
 
 include('smartmeter.incl.php');
 init_db();
-define('DATA_TABLE','pulses');
 
 
 // uuid
 $uuid = validate_uuid($_GET['uuid']);
 
-
 // mode
 $mode = $_GET['mode'];
 
-// header data
-$json = array();
-$json['source'] = 'volkszaehler.org';
-$json['version'] = '0.1';
-$json['storage'] = $CONFIG['data_storage'];
-$json['channels'] = array();
+// json response data
+$json = loadJSONHeader();
 
 
 if($CONFIG['data_storage'] == 'mysql') {
-	loadFromMySQL();
+	loadFromMySQL($uuid,$mode);
 }
 
 
-function loadFromMySQL() {
+function loadJSONHeader() {
 	
-	global $mode,$json,$uuid,$windowSize,$windowEnd,$windowStart,$windowInterval,$ids;
+	global $CONFIG;
+	
+	$json = array();
+	
+	$json['source'] = 'volkszaehler.org';
+	$json['version'] = '0.1';
+	$json['storage'] = $CONFIG['data_storage'];
+	$json['channels'] = array();
+	
+	return $json;
+}
 
 
+function loadFromMySQL($uuid,$mode) {
+	
+	global $json;
+	
 	if($mode == 'getPulses') {
-	
-		// windowSize
-		$windowSize = $_GET['windowSize']*1;
-		
-		// windowInterval
-		if(		$_GET['windowInterval'] == 'SECOND' || 
-				$_GET['windowInterval'] == 'MINUTE' || 
-				$_GET['windowInterval'] == 'HOUR' || 
-				$_GET['windowInterval'] == 'DAY' || 
-				$_GET['windowInterval'] == 'MONTH' ||
-				$_GET['windowInterval'] == 'YEAR')
-			$windowInterval = $_GET['windowInterval'];
 		
 		// windowStart
-		if(!$_GET['windowStart']) $windowStart = 'auto';
+		$windowStart = $_GET['windowStart'] * 1;
 		
-		if(!$_GET['windowStart'] || $_GET['windowStart'] == 'auto') $windowStart = 'auto';
-		else $windowStart = $_GET['windowStart'] * 1;
+		// windowEnd
+		$windowEnd = $_GET['windowEnd'] * 1;
 		
-		if(!$_GET['windowEnd'] || $_GET['windowEnd'] == 'LAST') $windowEnd = 'LAST';
-		else $windowEnd = $_GET['windowEnd'] * 1;
-		
-		
+		// load ids into array
 		$ids_array = explode(',',$_GET['ids']);
-		
 		foreach($ids_array as $id) {
 			$id *= 1;
 			if($id != 0)
@@ -98,62 +88,57 @@ function loadFromMySQL() {
 		$json['windowStart'] = 0;
 		$json['windowEnd'] = 0;
 		
-		if(count($ids)) {
+		foreach($ids as $id) {
 			
-			foreach($ids as $id) {
-				
-				
-				// data about the channel (id, resolution, function ...)
-				$sql = '	SELECT *
-						FROM
+			// data about the channel (id, resolution, function ...)
+			$sql = '	SELECT *
+					FROM
+						channels
+					WHERE
+						id='.$id.' AND
+						uuid="'.$uuid.'"';
+			$result = mysql_query($sql);
+			$data_channel = mysql_fetch_assoc($result);
+			
+			// pulses for this channel
+			$pulses = array();
+			
+			$sql = '	SELECT
+							DATE_FORMAT(time,\'%Y-%m-%d %H:%i:%s\') as time,
+							UNIX_TIMESTAMP(time) as timestamp,
+							numb,
+							resolution
+						FROM 
+							pulses
+						INNER JOIN
 							channels
-						WHERE
-							id='.$id.' AND
-							uuid="'.$uuid.'"';
-				$result = mysql_query($sql);
-				$data_channel = mysql_fetch_assoc($result);
+						ON
+							pulses.id=channels.id AND
+							uuid="'.$uuid.'"
+						WHERE 
+							pulses.id='.$id.' AND
+							UNIX_TIMESTAMP(time)>='.$windowStart.' AND
+							UNIX_TIMESTAMP(time)<='.$windowEnd.'
+						ORDER BY
+							time';
+			//echo '/*'.$sql.'*/';
+			$result = mysql_query($sql);
+			
+			while($data = mysql_fetch_assoc($result)) {
 				
-				// pulses for this channel
-				$pulses = array();
+				// array of pulses: timestamp=>count
+				$pulses[] = array($data['timestamp']*1,$data['numb']*1);
 				
-				$sql = '	SELECT
-								DATE_FORMAT(time,\'%Y-%m-%d %H:%i:%s\') as time,
-								UNIX_TIMESTAMP(time) as timestamp,
-								numb,
-								resolution
-							FROM 
-								'.DATA_TABLE.'
-							INNER JOIN
-								channels
-							ON
-								'.DATA_TABLE.'.id=channels.id AND
-								uuid="'.$uuid.'"
-							WHERE 
-								'.DATA_TABLE.'.id='.$id.' AND
-								time>=\''.windowStart().'\' AND
-								time<=\''.windowEnd().'\'
-							ORDER BY
-								time';
-				//time>=DATE_SUB(\''.windowEnd().'\', INTERVAL '.$windowSize.' '.$windowInterval.')
-				//echo '/*'.$sql.'*/';
-				$result = mysql_query($sql);
+				// min timestamp
+				if($json['windowStart'] == 0 OR $json['windowStart'] > $data['timestamp'])
+					$json['windowStart'] = $data['timestamp']*1;
 				
-				while($data = mysql_fetch_assoc($result)) {
-					
-					// array of pulses: timestamp=>count
-					$pulses[] = array($data['timestamp']*1,$data['numb']*1);
-					
-					// min timestamp
-					if($json['windowStart'] == 0 OR $json['windowStart'] > $data['timestamp'])
-						$json['windowStart'] = $data['timestamp']*1;
-					
-					// max timestamp
-					if($json['windowEnd'] == 0 OR $json['windowEnd'] < $data['timestamp'])
-						$json['windowEnd'] = $data['timestamp']*1;
-				}
-				
-				$json['channels'][] = array('id'=>$data_channel['id']*1,'resolution'=>$data_channel['resolution']*1,'function'=>$data_channel['function'],'pulses'=>$pulses);
+				// max timestamp
+				if($json['windowEnd'] == 0 OR $json['windowEnd'] < $data['timestamp'])
+					$json['windowEnd'] = $data['timestamp']*1;
 			}
+			
+			$json['channels'][] = array('id'=>$data_channel['id']*1,'resolution'=>$data_channel['resolution']*1,'function'=>$data_channel['function'],'pulses'=>$pulses);
 		}
 		
 		echo json_encode($json);
@@ -182,41 +167,6 @@ function loadFromMySQL() {
 	else {
 		echo 'ERROR: no mode selected.';
 	}
-}
-
-
-function windowStart() {
-	
-	global $ids,$windowStart;
-	
-	if($windowStart == 'auto') {
-		// not implemented yet
-	}
-	elseif($windowStart > 0) {
-		return date('Y-m-d H:i:s',$windowStart);
-	}
-	
-}
-
-function windowEnd() {
-	
-	global $ids,$windowEnd;
-	
-	if($windowEnd == 'LAST') {
-		if(!count($ids))
-			return;
-		$ids_for_sql = implode(',',$ids);
-		
-		$sql = 'SELECT MAX(time) AS windowEnd FROM pulses WHERE id IN ('.$ids_for_sql.')';
-		$result = mysql_query($sql);
-		$data = mysql_fetch_assoc($result);
-		
-		return $data['windowEnd'];
-	}
-	elseif($windowEnd > 0) {
-		return date('Y-m-d H:i:s',$windowEnd);
-	}
-	
 }
 
 ?>

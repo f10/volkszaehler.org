@@ -54,9 +54,7 @@ if($CONFIG['data_storage'] == 'mysql') {
 elseif($CONFIG['data_storage'] == 'pgsql') {
 	logToPgSQL($controllertime,$port,$uuid);
 }
-elseif($CONFIG['data_storage'] == 'csv') {
-	logToCSV($controllertime,$port,$uuid);
-}
+
 
 function logToMySQL($time,$port,$uuid) {
 
@@ -81,23 +79,6 @@ function logToMySQL($time,$port,$uuid) {
 
 function logToPgSQL($time,$port,$uuid) {}
 
-function logToCSV($time,$port,$uuid) {
-	
-	$filename = './data/'.$uuid.'_pulses.csv';
-	
-	$path = realpath($filename);
-	
-	if(!strstr($path,realpath('./'))) {
-		echo "ERROR: file does not exist.";
-		return;
-	}
-	
-	$fp = fopen($path,'a');
-	
-	fwrite($fp,$time.';'.$port."\n");
-	
-	fclose($fp);
-	
-}
+
 
 ?>
