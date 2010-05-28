@@ -75,6 +75,28 @@ function loadFromMySQL($uuid,$mode) {
 		// windowEnd
 		$windowEnd = $_GET['windowEnd'] * 1;
 		
+		if($_GET['windowGrouping'] != '-' AND $_GET['windowGrouping'] != '') {
+			$windowGroupingSQL = 'GROUP BY ';
+			// windowGrouping
+			switch($_GET['windowGrouping']) {
+				case 'minute':
+					$windowGroupingSQL .= 'YEAR(time),MONTH(time),DAY(time),HOUR(time),MINUTE(time)';
+					break;
+				case 'hour':
+					$windowGroupingSQL .= 'YEAR(time),MONTH(time),DAY(time),HOUR(time)';
+					break;
+				case 'day':
+					$windowGroupingSQL .= 'YEAR(time),MONTH(time),DAY(time)';
+					break;
+				case 'month':
+					$windowGroupingSQL .= 'YEAR(time),MONTH(time)';
+					break;
+				case 'year':
+					$windowGroupingSQL .= 'YEAR(time)';
+					break;
+			}
+		}
+		
 		// load ids into array
 		$ids_array = explode(',',$_GET['ids']);
 		foreach($ids_array as $id) {
@@ -106,7 +128,7 @@ function loadFromMySQL($uuid,$mode) {
 			$sql = '	SELECT
 							DATE_FORMAT(time,\'%Y-%m-%d %H:%i:%s\') as time,
 							UNIX_TIMESTAMP(time) as timestamp,
-							numb,
+							SUM(numb) as numb,
 							resolution
 						FROM 
 							pulses
@@ -119,11 +141,11 @@ function loadFromMySQL($uuid,$mode) {
 							pulses.id='.$id.' AND
 							UNIX_TIMESTAMP(time)>='.$windowStart.' AND
 							UNIX_TIMESTAMP(time)<='.$windowEnd.'
+						'.$windowGroupingSQL.'
 						ORDER BY
 							time';
 			//echo '/*'.$sql.'*/';
 			$result = mysql_query($sql);
-			
 			while($data = mysql_fetch_assoc($result)) {
 				
 				// array of pulses: timestamp=>count

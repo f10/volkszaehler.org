@@ -165,6 +165,9 @@ var myWindowStart = 0;
 // windowEnd parameter for json server
 var myWindowEnd = (new Date()).getTime()/1000;
 
+// windowGrouping for json server
+var windowGrouping = 0;
+
 // mouse position on mousedown (x-axis)
 var moveXstart = 0;
 
@@ -254,9 +257,10 @@ function getData() {
 	// calcMyWindowStart
 	myWindowStart = calcMyWindowStart();
 	
+	$('#debug').append('<a href="smartmeter.json.php?uuid='+myUUID+'&mode=getPulses&ids='+ids_parameter+'&windowStart='+myWindowStart+'&windowEnd='+myWindowEnd+'&windowGrouping='+f.grouping.value+'">json</a>');
 	// load json data with given time window
 	//$.getJSON("smartmeter.json.php",{uuid: myUUID,mode: 'getPulses', ids: ids_parameter, windowEnd: myWindowEnd, windowSize: f.window.value.substring(0,1), windowInterval: f.window.value.substring(1)}, function(j){
-	$.getJSON("smartmeter.json.php",{uuid: myUUID,mode: 'getPulses', ids: ids_parameter, windowStart: myWindowStart, windowEnd: myWindowEnd}, function(j){
+	$.getJSON("smartmeter.json.php",{uuid: myUUID,mode: 'getPulses', ids: ids_parameter, windowStart: myWindowStart, windowEnd: myWindowEnd, windowGrouping: f.grouping.value}, function(j){
 		data = j;
 		//$('#debug').empty().append(data.toSource());
 		// then show/reload the chart

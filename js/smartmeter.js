@@ -180,7 +180,7 @@ function raw2Energy(raw) {
 			t *= 24;
 		case 'hour':
 			t *= 60;
-		case 'minutes':
+		case 'minute':
 			t *= 60;
 	}
 	
@@ -190,7 +190,7 @@ function raw2Energy(raw) {
 			data_grouped.push([timestamp*1000,data_grouped_time[timestamp]/raw.resolution]);
 		else {
 			
-			data_grouped.push([timestamp*1000,data_grouped_time[timestamp]/raw.resolution/(t/3600)*1000]);
+			data_grouped.push([timestamp*1000, data_grouped_time[timestamp] / raw.resolution *3600 /t *1000 ]);
 		}
 	}
 	
