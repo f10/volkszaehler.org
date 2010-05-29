@@ -66,6 +66,13 @@ function logToMySQL($time,$port,$uuid) {
 		exit();
 	}
 	
+	// if transfered timestamp is older than now - 1 day
+	// the controller faild with NTP and starts with 1970
+	// so we take the local server time instead of transfered timestamp
+	if($time<(time()-24*60*60)) {
+		$time = time();
+	}
+	
 	$result = mysql_query("	INSERT INTO
 						pulses
 					SET
