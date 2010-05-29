@@ -166,10 +166,13 @@ function raw2Energy(raw) {
 			//return;
 		}
 		// add pulse count to this group time
+		/*
 		if(data_grouped_time[time_grouped.getTime()/1000] > 0)
 			data_grouped_time[time_grouped.getTime()/1000] += raw.pulses[i][1];
 		else
 			data_grouped_time[time_grouped.getTime()/1000] = raw.pulses[i][1];
+		*/
+		data_grouped_time[raw.pulses[i][0]] = raw.pulses[i][1];
 		
 	}
 	t = 1;
@@ -184,15 +187,27 @@ function raw2Energy(raw) {
 			t *= 60;
 	}
 	
+	
+	
+	
 	// transform to proper array and energy instead of pulse count
 	for(var timestamp in data_grouped_time) {
+		if(data_grouped_time[timestamp] == 0 && typeof data_grouped_time[(timestamp*1)+(t*1)] != 'undefined')
+			data_grouped_time[timestamp] = data_grouped_time[(timestamp*1)+(t*1)];
 		if(f.info.value == 'energy')
 			data_grouped.push([timestamp*1000,data_grouped_time[timestamp]/raw.resolution]);
 		else {
 			
-			data_grouped.push([timestamp*1000, data_grouped_time[timestamp] / raw.resolution *3600 /t *1000 ]);
+			data_grouped.push([timestamp*1000, 3600 * 1000 * data_grouped_time[timestamp] / raw.resolution / t ]);
 		}
 	}
+	
+	for(var i=data_grouped.length-1;i>=0;i--) {
+		if(data_grouped[i][1]==0 && i>0)
+			data_grouped[i][1] = data_grouped[i-1][1];
+	}
+	
+	//$('#debug').append(data_grouped.toSource())
 	
 	return data_grouped;
 }

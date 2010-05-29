@@ -109,6 +109,7 @@
 	</div>
 	
 	<div id="Chart">
+		<div id="ChartPlot" style="height:100%">
 		<div class="moveArrow" style="left:0px;">
 			<table cellpadding="0" cellspacing="0" height="100%">
 				<tr>
@@ -126,6 +127,10 @@
 					</td>
 				</tr>
 			</table>
+		</div>
+		</div>
+		<div id="ChartInfo" style="display:none;">
+		
 		</div>
 	</div>
 </div>
@@ -257,7 +262,7 @@ function getData() {
 	// calcMyWindowStart
 	myWindowStart = calcMyWindowStart();
 	
-	$('#debug').append('<a href="smartmeter.json.php?uuid='+myUUID+'&mode=getPulses&ids='+ids_parameter+'&windowStart='+myWindowStart+'&windowEnd='+myWindowEnd+'&windowGrouping='+f.grouping.value+'">json</a>');
+	//$('#debug').append('<a href="smartmeter.json.php?uuid='+myUUID+'&mode=getPulses&ids='+ids_parameter+'&windowStart='+myWindowStart+'&windowEnd='+myWindowEnd+'&windowGrouping='+f.grouping.value+'">json</a>');
 	// load json data with given time window
 	//$.getJSON("smartmeter.json.php",{uuid: myUUID,mode: 'getPulses', ids: ids_parameter, windowEnd: myWindowEnd, windowSize: f.window.value.substring(0,1), windowInterval: f.window.value.substring(1)}, function(j){
 	$.getJSON("smartmeter.json.php",{uuid: myUUID,mode: 'getPulses', ids: ids_parameter, windowStart: myWindowStart, windowEnd: myWindowEnd, windowGrouping: f.grouping.value}, function(j){
@@ -265,6 +270,9 @@ function getData() {
 		//$('#debug').empty().append(data.toSource());
 		// then show/reload the chart
 		//if(data.channels.length > 0 && data.channels[0].pulses.length > 0)
+		if(f.info.value == 'infos')
+			showInfos()
+		else
 			showChart();
 		
 		$('#loading').empty();
@@ -273,11 +281,29 @@ function getData() {
 	return false;
 }
 
+function showInfos() {
+	
+	$('#ChartPlot').hide();
+	$('#ChartInfo').show();
+	
+	$('#ChartInfo').empty();
+	
+	for(var i=0;i<data.channels.length;i++) {
+		$('#ChartInfo').append(data.channels[i]['function']+' (Aufl&ouml;sung:'+data.channels[i]['resolution']+'imp/kWh) Momentanverbrauch: Min: Max:<br>');
+	}
+	
+	
+}
+
+
 
 function showChart() {
 	
 	var jqData = new Array();
 	var series_chart = new Array();
+	
+	$('#ChartInfo').hide();
+	$('#ChartPlot').show();
 	
 	jqOptions = {
 			legend:{show:true},

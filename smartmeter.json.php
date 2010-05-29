@@ -67,6 +67,8 @@ function loadFromMySQL($uuid,$mode) {
 	
 	global $json;
 	
+	$lessPulsesThreshold = 10;
+	
 	if($mode == 'getPulses') {
 		
 		// windowStart
@@ -75,24 +77,37 @@ function loadFromMySQL($uuid,$mode) {
 		// windowEnd
 		$windowEnd = $_GET['windowEnd'] * 1;
 		
+		$timeFormatSQL = '%Y-%m-%d %H:%i:%s';
+		
+		$windowGroupingSQL = 'time ';
+		
 		if($_GET['windowGrouping'] != '-' AND $_GET['windowGrouping'] != '') {
-			$windowGroupingSQL = 'GROUP BY ';
 			// windowGrouping
 			switch($_GET['windowGrouping']) {
 				case 'minute':
-					$windowGroupingSQL .= 'YEAR(time),MONTH(time),DAY(time),HOUR(time),MINUTE(time)';
+					$windowGroupingSeconds = 60;
+					$windowGroupingSQL = 'YEAR(time),MONTH(time),DAY(time),HOUR(time),MINUTE(time)';
+					$timeFormatSQL = '%Y-%m-%d %H:%i:00';
 					break;
 				case 'hour':
-					$windowGroupingSQL .= 'YEAR(time),MONTH(time),DAY(time),HOUR(time)';
+					$windowGroupingSeconds = 60*60;
+					$windowGroupingSQL = 'YEAR(time),MONTH(time),DAY(time),HOUR(time)';
+					$timeFormatSQL = '%Y-%m-%d %H:00:00';
 					break;
 				case 'day':
-					$windowGroupingSQL .= 'YEAR(time),MONTH(time),DAY(time)';
+					$windowGroupingSeconds = 24*60*60;
+					$windowGroupingSQL = 'YEAR(time),MONTH(time),DAY(time)';
+					$timeFormatSQL = '%Y-%m-%d 00:00:00';
 					break;
 				case 'month':
-					$windowGroupingSQL .= 'YEAR(time),MONTH(time)';
+					$windowGroupingSeconds = 30.5*24*60*60;
+					$windowGroupingSQL = 'YEAR(time),MONTH(time)';
+					$timeFormatSQL = '%Y-%m';
 					break;
 				case 'year':
-					$windowGroupingSQL .= 'YEAR(time)';
+					$windowGroupingSeconds = 365*30.5*24*60*60;
+					$windowGroupingSQL = 'YEAR(time)';
+					$timeFormatSQL = '%Y';
 					break;
 			}
 		}
@@ -126,8 +141,7 @@ function loadFromMySQL($uuid,$mode) {
 			$pulses = array();
 			
 			$sql = '	SELECT
-							DATE_FORMAT(time,\'%Y-%m-%d %H:%i:%s\') as time,
-							UNIX_TIMESTAMP(time) as timestamp,
+							UNIX_TIMESTAMP(DATE_FORMAT(time,\''.$timeFormatSQL.'\')) as timestamp,
 							SUM(numb) as numb,
 							resolution
 						FROM 
@@ -141,12 +155,31 @@ function loadFromMySQL($uuid,$mode) {
 							pulses.id='.$id.' AND
 							UNIX_TIMESTAMP(time)>='.$windowStart.' AND
 							UNIX_TIMESTAMP(time)<='.$windowEnd.'
+						GROUP BY
 						'.$windowGroupingSQL.'
 						ORDER BY
 							time';
 			//echo '/*'.$sql.'*/';
 			$result = mysql_query($sql);
 			while($data = mysql_fetch_assoc($result)) {
+			
+				if($windowGroupingSeconds AND $data['numb'] < $lessPulsesThreshold) {
+					
+					$sql1 = 'SELECT UNIX_TIMESTAMP(time) AS timestamp FROM pulses WHERE id='.$id.' AND time>FROM_UNIXTIME('.$data[timestamp].') ORDER BY time LIMIT 2';
+					$result1 = mysql_query($sql1);
+					$difference = 0;
+					while($data1 = mysql_fetch_assoc($result1)) {
+						if(!$difference)
+							$difference -= $data1['timestamp'];
+						else
+							$difference += $data1['timestamp'];
+					}
+					
+					if($difference AND $windowGroupingSeconds/$difference<$lessPulsesThreshold) {
+						// numb for this interval is faked
+						$data['numb'] = round($windowGroupingSeconds/$difference,2);
+					}
+				}
 				
 				// array of pulses: timestamp=>count
 				$pulses[] = array($data['timestamp']*1,$data['numb']*1);
